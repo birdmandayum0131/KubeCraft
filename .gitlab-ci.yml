@@ -1,0 +1,70 @@
+stages:
+  - prepare
+  - build
+  - deploy
+
+variables:
+  GIT_STRATEGY: none
+  GATEWAY_IMAGE: "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/kubecraft-gateway"
+  BRIDGE_IMAGE: "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/kubecraft-bridge"
+
+prepare:
+  stage: prepare
+  image: alpine:latest
+  script:
+    - apk add --no-cache git
+    - git clone --depth 1 https://github.com/birdmandayum0131/KubeCraft.git
+    - cd KubeCraft
+    - git fetch --tags
+    - GATEWAY_VERSION=$(git describe --tags --abbrev=0 --match "kubecraft-gateway-*")
+    - BRIDGE_VERSION=$(git describe --tags --abbrev=0 --match "kubecraft-bridge-*")
+    - echo "GATEWAY_VERSION=${GATEWAY_VERSION#kubecraft-gateway-}"
+    - echo "GATEWAY_VERSION=${GATEWAY_VERSION#kubecraft-gateway-}" >> github.env
+    - echo "BRIDGE_VERSION=${BRIDGE_VERSION#kubecraft-bridge-}"
+    - echo "BRIDGE_VERSION=${BRIDGE_VERSION#kubecraft-bridge-}" >> github.env
+  artifacts:
+    paths:
+      - KubeCraft/
+    reports:
+      dotenv: KubeCraft/github.env
+
+build:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  before_script:
+    - docker info
+  script:
+    - cd KubeCraft
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - if docker manifest inspect $GATEWAY_IMAGE:$GATEWAY_VERSION > /dev/null 2>&1; then
+        echo "Gateway Image already exists, skipping build";
+      else
+        docker build -t $GATEWAY_IMAGE:$GATEWAY_VERSION .;
+        docker push $GATEWAY_IMAGE:$GATEWAY_VERSION;
+      fi
+    - if docker manifest inspect $BRIDGE_IMAGE:$BRIDGE_VERSION > /dev/null 2>&1; then
+        echo "Bridge Image already exists, skipping build";
+      else
+        docker build -t $BRIDGE_IMAGE:$BRIDGE_VERSION .;
+        docker push $BRIDGE_IMAGE:$BRIDGE_VERSION;
+      fi
+
+deploy:
+  stage: deploy
+  image: dtzar/helm-kubectl:latest
+  script:
+    - cd KubeCraft
+    - kubectl config get-contexts
+    - kubectl config use-context birdman0131/kubernetes-agent:k3s-home-agent
+    - helm upgrade --install kubecraft deploy/helm -n minecraft
+      --set image.gateway.repository="$GATEWAY_IMAGE"
+      --set image.gateway.tag="$GATEWAY_VERSION"
+      --set image.bridge.repository="$BRIDGE_IMAGE"
+      --set image.bridge.tag="$BRIDGE_VERSION"
