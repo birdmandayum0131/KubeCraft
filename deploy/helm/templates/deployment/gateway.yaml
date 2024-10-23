@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{.Values.podSelector.gateway | toYaml | nindent 6}}
+  template:
+    metadata:
+      labels: {{.Values.podSelector.gateway | toYaml | nindent 8}}
+    spec:
+      serviceAccountName: minecraft-api-server
+      containers:
+        - name: minecraft-gateway-container
+          image: "{{ .Values.image.gateway.repository }}:{{ .Values.image.gateway.tag }}"
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: minecraft-gateway-config

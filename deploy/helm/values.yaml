@@ -1,0 +1,23 @@
+podSelector:
+  minecraft:
+    app: minecraft-paper
+    tier: server
+  gateway:
+    app: minecraft-gateway
+    tier: backend
+  bridge:
+    app: minecraft-bridge
+    tier: backend
+
+ports:
+  minecraft: 25565
+  gateway: 8000
+  bridge: 8000
+
+image:
+  gateway:
+    repository: kubecraft-gateway
+    tag: latest
+  bridge:
+    repository: minecraft-bridge
+    tag: latest

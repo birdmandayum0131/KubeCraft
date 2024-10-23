@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft-bridge
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.ports.bridge }}
+      targetPort: {{ .Values.ports.bridge }}
+      protocol: TCP
+      name: minecraft-bridge-http
+  selector: {{ .Values.podSelector.bridge | toYaml | nindent 4 }}

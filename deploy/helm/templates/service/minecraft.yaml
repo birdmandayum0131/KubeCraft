@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft-tcp
+spec:
+  type: NodePort
+  #allocateLoadBalancerNodePorts : false
+  ports:
+    - port: {{ .Values.ports.minecraft }}
+      targetPort: {{ .Values.ports.minecraft }}
+      protocol: TCP
+      name: minecraft-tcp
+  selector: {{ .Values.podSelector.minecraft | toYaml | nindent 4 }}
