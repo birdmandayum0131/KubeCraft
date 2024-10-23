@@ -1,0 +1,18 @@
+FROM golang:1.22.3-bullseye
+LABEL author="Bird"
+# Create a non-root user and set the home directory
+RUN groupadd -r Servers && useradd -r -g Servers -m -d /home/mcapi mcapi
+# Copy project to the image for building
+COPY ./src/features/kubecraft-gateway /home/mcapi/kubecraft-gateway-project
+# Build the project and move it to home dir
+WORKDIR /home/mcapi/kubecraft-gateway-project
+RUN mkdir build && \
+    go build -o ./build ./
+RUN mv ./build/kubecraft-gateway /home/mcapi/kubecraft-gateway
+# Remove the project folder after build
+WORKDIR /home/mcapi
+RUN rm -r kubecraft-gateway-project
+# Switch to the non-root user
+USER mcapi
+EXPOSE 8000
+CMD ["./kubecraft-gateway"]
