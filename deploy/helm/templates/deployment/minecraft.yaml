@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-paper
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{.Values.podSelector.minecraft | toYaml | nindent 6}}
+  template:
+    metadata:
+      labels: {{.Values.podSelector.minecraft | toYaml | nindent 8}}
+    spec:
+      containers:
+        - name: minecraft-container
+          image: "birdman0131/minecraft-server:mc21-java21-paper"
+          ports:
+            - containerPort: {{.Values.ports.minecraft}}
+              name: minecraft-tcp
+              protocol: TCP
+          volumeMounts:
+            - name: minecraft-server-volume
+              mountPath: /home/paper/minecraft
+      volumes:
+        - name: minecraft-server-volume
+          persistentVolumeClaim:
+            claimName: minecraft-server-volume-claim

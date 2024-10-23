@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubecraft-gateway
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.ports.gateway }}
+      targetPort: {{ .Values.ports.gateway }}
+      protocol: TCP
+      name: minecraft-api-http
+  selector: {{ .Values.podSelector.gateway | toYaml | nindent 4 }}

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-bridge
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{.Values.podSelector.bridge | toYaml | nindent 6}}
+  template:
+    metadata:
+      labels: {{.Values.podSelector.bridge | toYaml | nindent 8}}
+    spec:
+      containers:
+        - name: minecraft-bridge-container
+          image: "{{ .Values.image.bridge.repository }}:{{ .Values.image.bridge.tag }}"
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: minecraft-bridge-config
