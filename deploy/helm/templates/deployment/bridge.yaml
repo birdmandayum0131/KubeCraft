@@ -10,6 +10,8 @@ spec:
     metadata:
       labels: {{.Values.podSelector.bridge | toYaml | nindent 8}}
     spec:
+      imagePullSecrets:
+        - name: gitlab-registry-secret
       containers:
         - name: minecraft-bridge-container
           image: "{{ .Values.image.bridge.repository }}:{{ .Values.image.bridge.tag }}"

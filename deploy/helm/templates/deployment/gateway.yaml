@@ -10,6 +10,8 @@ spec:
     metadata:
       labels: {{.Values.podSelector.gateway | toYaml | nindent 8}}
     spec:
+      imagePullSecrets:
+        - name: gitlab-registry-secret
       serviceAccountName: minecraft-api-server
       containers:
         - name: minecraft-gateway-container
