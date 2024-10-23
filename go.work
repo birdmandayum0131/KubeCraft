@@ -1,5 +1,5 @@
 go 1.22.2
 
 use (
-	./src/features/minecraftapi
+	./src/features/kubecraft-gateway
 )

@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"minecraftapi/infrastructure"
-	"minecraftapi/interfaces/rest/handlers"
-	"minecraftapi/interfaces/rest/routes"
-	"minecraftapi/services"
+	"kubecraft-gateway/infrastructure"
+	"kubecraft-gateway/interfaces/rest/handlers"
+	"kubecraft-gateway/interfaces/rest/routes"
+	"kubecraft-gateway/services"
 	"os"
 
 	"github.com/gin-gonic/gin"

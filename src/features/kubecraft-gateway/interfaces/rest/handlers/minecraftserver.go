@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"fmt"
-	schemas "minecraftapi/interfaces/schemas/api"
-	"minecraftapi/services"
+	schemas "kubecraft-gateway/interfaces/schemas/api"
+	"kubecraft-gateway/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

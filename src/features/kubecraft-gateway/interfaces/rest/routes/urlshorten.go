@@ -1,7 +1,7 @@
 package routes
 
 import (
-	handlers "minecraftapi/interfaces/rest/handlers"
+	handlers "kubecraft-gateway/interfaces/rest/handlers"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,4 +1,4 @@
-module minecraftapi
+module kubecraft-gateway
 
 go 1.22.0
 

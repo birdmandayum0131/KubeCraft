@@ -2,7 +2,7 @@ package services
 
 import (
 	"fmt"
-	"minecraftapi/domain"
+	"kubecraft-gateway/domain"
 )
 
 type ServerMonitor interface {
