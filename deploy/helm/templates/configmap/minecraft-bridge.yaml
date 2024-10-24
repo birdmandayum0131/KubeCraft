@@ -3,4 +3,4 @@ apiVersion: v1
 metadata:
   name: minecraft-bridge-config
 data:
-  MINECRAFT_SERVER_IP: "minecraft-paper.minecraft.svc.cluster.local"
+  MINECRAFT_SERVER_IP: "minecraft-tcp.minecraft.svc.cluster.local"

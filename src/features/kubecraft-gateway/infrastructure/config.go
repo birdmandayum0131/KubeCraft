@@ -1,6 +1,6 @@
 package infrastructure
 
-type MinecraftKubeCtrlConfig struct {
-	Namespace string
+type MinecraftKubeConfig struct {
+	Namespace      string
 	DeploymentName string
 }
