@@ -5,3 +5,4 @@ metadata:
 data:
   MINECRAFT_SERVER_NAMESPACE: "minecraft"
   MINECRAFT_SERVER_DEPLOYMENT: "minecraft-paper"
+  MINECRAFT_BRIDGE_URL: "http://minecraft-bridge.minecraft.svc.cluster.local:8000"
