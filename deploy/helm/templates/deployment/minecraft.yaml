@@ -10,6 +10,8 @@ spec:
     metadata:
       labels: {{.Values.podSelector.minecraft | toYaml | nindent 8}}
     spec:
+      securityContext:
+        fsGroup: 1000
       containers:
         - name: minecraft-container
           image: "birdman0131/minecraft-server:mc21-java21-paper"
