@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"kubecraft-gateway/infrastructure"
+	"kubecraft-gateway/infrastructure/bridgeclient"
 	"kubecraft-gateway/interfaces/rest/handlers"
 	"kubecraft-gateway/interfaces/rest/routes"
 	"kubecraft-gateway/services"
@@ -20,12 +21,24 @@ var kubeConfigPath = flag.String("kubeConfig", "./.kube/config", "kube config fi
 func main() {
 	flag.Parse()
 
-	minecraftKubeController, err := createKubeController()
+	mineKubeConfig, err := createMineKubeConfig()
 	if err != nil {
 		panic(err)
 	}
 
-	restAPIHandler := createRestHandler(minecraftKubeController, minecraftKubeController)
+	minecraftKubeController, err := createKubeController(mineKubeConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	bridgeClient, err := createBridgeClient()
+	if err != nil {
+		panic(err)
+	}
+
+	minecraftKubeMonitor := createMineKubeMonitor(*mineKubeConfig, *bridgeClient, minecraftKubeController)
+
+	restAPIHandler := createRestHandler(minecraftKubeMonitor, minecraftKubeController)
 
 	app := setupRouter(nil, restAPIHandler)
 	err = app.Run(":8000")
@@ -34,20 +47,21 @@ func main() {
 	}
 }
 
-func createKubeController() (*infrastructure.MinecraftKubeController, error) {
+func createMineKubeConfig() (*infrastructure.MinecraftKubeConfig, error) {
 	// create k8s client config from environment variables
 	envSrvNs, envSrvNsExist := os.LookupEnv("MINECRAFT_SERVER_NAMESPACE")
 	envSrvDeploy, envSrvDeployExist := os.LookupEnv("MINECRAFT_SERVER_DEPLOYMENT")
-	var kubeCtrlConfig infrastructure.MinecraftKubeCtrlConfig
-	if !envSrvNsExist && !envSrvDeployExist {
+	if !envSrvNsExist || !envSrvDeployExist {
 		return nil, fmt.Errorf("MINECRAFT_SERVER_NAMESPACE and MINECRAFT_SERVER_DEPLOYMENT are not set")
 	} else {
-		kubeCtrlConfig = infrastructure.MinecraftKubeCtrlConfig{
+		return &infrastructure.MinecraftKubeConfig{
 			Namespace:      envSrvNs,
 			DeploymentName: envSrvDeploy,
-		}
+		}, nil
 	}
+}
 
+func createKubeController(config *infrastructure.MinecraftKubeConfig) (*infrastructure.MinecraftKubeController, error) {
 	// read cluster config from service account token
 	clusterConfig, err := rest.InClusterConfig()
 	if err != nil {
@@ -64,9 +78,26 @@ func createKubeController() (*infrastructure.MinecraftKubeController, error) {
 	}
 
 	return &infrastructure.MinecraftKubeController{
-		Config:    kubeCtrlConfig,
+		Config:    *config,
 		Clientset: clientset,
 	}, nil
+}
+
+func createBridgeClient() (*bridgeclient.MinecraftBridgeClient, error) {
+	env_bridge_url, env_bridge_url_exist := os.LookupEnv("MINECRAFT_BRIDGE_URL")
+	if !env_bridge_url_exist {
+		return nil, fmt.Errorf("MINECRAFT_SERVER_NAMESPACE and MINECRAFT_SERVER_DEPLOYMENT are not set")
+	} else {
+		return bridgeclient.NewMinecraftBridgeClient(env_bridge_url), nil
+	}
+}
+
+func createMineKubeMonitor(config infrastructure.MinecraftKubeConfig, bridgeClient bridgeclient.MinecraftBridgeClient, watcher infrastructure.DeploymentWatcher) *infrastructure.MineKubeMonitor {
+	return &infrastructure.MineKubeMonitor{
+		Config:        config,
+		DeployWatcher: watcher,
+		BridgeClient:  bridgeClient,
+	}
 }
 
 func createRestHandler(serverMonitor services.ServerMonitor, serverManager services.ServerManager) *handlers.ServerAPIHandler {
