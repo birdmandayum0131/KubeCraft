@@ -5,17 +5,16 @@ stages:
 
 variables:
   GIT_STRATEGY: none
-  GATEWAY_IMAGE: "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/kubecraft-gateway"
-  BRIDGE_IMAGE: "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/kubecraft-bridge"
+  GATEWAY_IMAGE: "$CI_REGISTRY_IMAGE/kubecraft-gateway"
+  BRIDGE_IMAGE: "$CI_REGISTRY_IMAGE/kubecraft-bridge"
 
 prepare:
   stage: prepare
   image: alpine:latest
   script:
     - apk add --no-cache git
-    - git clone --depth 1 https://github.com/birdmandayum0131/KubeCraft.git
+    - git clone https://github.com/birdmandayum0131/KubeCraft.git
     - cd KubeCraft
-    - git fetch --tags
     - GATEWAY_VERSION=$(git describe --tags --abbrev=0 --match "kubecraft-gateway-*")
     - BRIDGE_VERSION=$(git describe --tags --abbrev=0 --match "kubecraft-bridge-*")
     - echo "GATEWAY_VERSION=${GATEWAY_VERSION#kubecraft-gateway-}"
@@ -46,13 +45,13 @@ build:
     - if docker manifest inspect $GATEWAY_IMAGE:$GATEWAY_VERSION > /dev/null 2>&1; then
         echo "Gateway Image already exists, skipping build";
       else
-        docker build -t $GATEWAY_IMAGE:$GATEWAY_VERSION .;
+        docker build -f ./docker/Gateway-Dockerfile -t $GATEWAY_IMAGE:$GATEWAY_VERSION .;
         docker push $GATEWAY_IMAGE:$GATEWAY_VERSION;
       fi
     - if docker manifest inspect $BRIDGE_IMAGE:$BRIDGE_VERSION > /dev/null 2>&1; then
         echo "Bridge Image already exists, skipping build";
       else
-        docker build -t $BRIDGE_IMAGE:$BRIDGE_VERSION .;
+        docker build -f ./docker/Bridge-Dockerfile -t $BRIDGE_IMAGE:$BRIDGE_VERSION .;
         docker push $BRIDGE_IMAGE:$BRIDGE_VERSION;
       fi
 
