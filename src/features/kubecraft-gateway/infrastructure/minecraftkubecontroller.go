@@ -3,7 +3,6 @@ package infrastructure
 import (
 	"context"
 	"fmt"
-	"kubecraft-gateway/domain"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -12,27 +11,18 @@ import (
 // MinecraftKubeController implement services.ServerManager and services.ServerMonitor
 // through kubernetes api
 type MinecraftKubeController struct {
-	Config    MinecraftKubeCtrlConfig
+	Config    MinecraftKubeConfig
 	Clientset *kubernetes.Clientset
 }
 
-// Fetch minecraft server status from k8s deployment api
-func (c *MinecraftKubeController) GetServerStatus() (domain.ServerStatus, error) {
-	deployClient := c.Clientset.AppsV1().Deployments(c.Config.Namespace)
-	deployment, err := deployClient.Get(context.TODO(), c.Config.DeploymentName, metav1.GetOptions{})
-
+func (c *MinecraftKubeController) GetServerReplicas(deploymentName string, namespace string) (int32, int32, error) {
+	deployClient := c.Clientset.AppsV1().Deployments(namespace)
+	deployment, err := deployClient.Get(context.TODO(), deploymentName, metav1.GetOptions{})
 	if err != nil {
-		return "", fmt.Errorf("failed to get minecraft server deployment: %w", err)
+		return 0, 0, fmt.Errorf("failed to get minecraft server deployment: %w", err)
 	}
 
-	//* Use deployment replicas to determine server is online or not
-	if *deployment.Spec.Replicas > 0 {
-		return domain.Online, nil
-	} else if *deployment.Spec.Replicas == 0 {
-		return domain.Offline, nil
-	}
-
-	return "", fmt.Errorf("Unknown server status, Replicas: %d", *deployment.Spec.Replicas)
+	return *deployment.Spec.Replicas, deployment.Status.Replicas, nil
 }
 
 func (c *MinecraftKubeController) StartServer() error {
