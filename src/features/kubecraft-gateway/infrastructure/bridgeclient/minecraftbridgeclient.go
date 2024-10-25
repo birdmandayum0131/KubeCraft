@@ -22,8 +22,8 @@ func NewMinecraftBridgeClient(minecraft_bridge_url string) *MinecraftBridgeClien
 
 	return &MinecraftBridgeClient{
 		minecraft_bridge_url: minecraft_bridge_url,
-		ping_endpoint:        minecraft_bridge_url + "api/v1/minecraft/status",
-		status_endpoint:      minecraft_bridge_url + "api/v1/minecraft/ping",
+		ping_endpoint:        minecraft_bridge_url + "api/v1/minecraft/ping",
+		status_endpoint:      minecraft_bridge_url + "api/v1/minecraft/status",
 	}
 }
 
