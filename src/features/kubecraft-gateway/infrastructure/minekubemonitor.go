@@ -12,9 +12,9 @@ type DeploymentWatcher interface {
 
 // MineKubeMonitor implement services.ServerMonitor
 type MineKubeMonitor struct {
-	Config        MinecraftKubeConfig
-	DeployWatcher DeploymentWatcher
-	BridgeClient  bridgeclient.MinecraftBridgeClient
+	Config       MinecraftKubeConfig
+	KubeWatcher  KubeWatcher
+	BridgeClient bridgeclient.MinecraftBridgeClient
 }
 
 // Use server replicas and mcstatus to determine server status
