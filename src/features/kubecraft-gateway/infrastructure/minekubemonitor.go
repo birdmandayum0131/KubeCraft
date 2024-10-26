@@ -6,26 +6,32 @@ import (
 	"kubecraft-gateway/infrastructure/bridgeclient"
 )
 
-type DeploymentWatcher interface {
-	GetServerReplicas(deployment string, namespace string) (int32, int32, error)
+type KubeWatcher interface {
+	GetServerReplicas(deployment string, namespace string) (*int32, error)
+	GetServerPodsNumber(namespace string) (*int, error)
 }
 
 // MineKubeMonitor implement services.ServerMonitor
 type MineKubeMonitor struct {
-	Config        MinecraftKubeConfig
-	DeployWatcher DeploymentWatcher
-	BridgeClient  bridgeclient.MinecraftBridgeClient
+	Config       MinecraftKubeConfig
+	KubeWatcher  KubeWatcher
+	BridgeClient bridgeclient.MinecraftBridgeClient
 }
 
 // Use server replicas and mcstatus to determine server status
 func (c *MineKubeMonitor) GetServerStatus() (domain.ServerStatus, error) {
-	targetReplicas, currentReplicas, err := c.DeployWatcher.GetServerReplicas(c.Config.DeploymentName, c.Config.Namespace)
+	replicas, err := c.KubeWatcher.GetServerReplicas(c.Config.DeploymentName, c.Config.Namespace)
 	if err != nil {
 		return domain.Unknown, fmt.Errorf("failed to get minecraft server deployment replicas: %w", err)
 	}
 
-	// * Ping minecraft server to check if server is ready
-	if targetReplicas > 0 {
+	pods, err := c.KubeWatcher.GetServerPodsNumber(c.Config.Namespace)
+	if err != nil {
+		return domain.Unknown, fmt.Errorf("failed to get minecraft server pods: %w", err)
+	}
+
+	if *replicas > 0 {
+		// * Server is started or starting
 		_, err = c.BridgeClient.Ping()
 		if err != nil {
 			_, ok := err.(*bridgeclient.ConnectionError)
@@ -39,8 +45,10 @@ func (c *MineKubeMonitor) GetServerStatus() (domain.ServerStatus, error) {
 			// * Server is ready
 			return domain.Online, nil
 		}
+
 	} else {
-		if currentReplicas == 0 {
+		// * Server is stopped or stopping
+		if *pods == 0 {
 			// * Server is offline
 			return domain.Offline, nil
 		} else {

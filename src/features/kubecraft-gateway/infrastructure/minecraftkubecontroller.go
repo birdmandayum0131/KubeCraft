@@ -15,14 +15,23 @@ type MinecraftKubeController struct {
 	Clientset *kubernetes.Clientset
 }
 
-func (c *MinecraftKubeController) GetServerReplicas(deploymentName string, namespace string) (int32, int32, error) {
+func (c *MinecraftKubeController) GetServerReplicas(deploymentName string, namespace string) (*int32, error) {
 	deployClient := c.Clientset.AppsV1().Deployments(namespace)
 	deployment, err := deployClient.Get(context.TODO(), deploymentName, metav1.GetOptions{})
 	if err != nil {
-		return 0, 0, fmt.Errorf("failed to get minecraft server deployment: %w", err)
+		return nil, fmt.Errorf("failed to get minecraft server deployment: %w", err)
 	}
+	return deployment.Spec.Replicas, nil
+}
 
-	return *deployment.Spec.Replicas, deployment.Status.Replicas, nil
+func (c *MinecraftKubeController) GetServerPodsNumber(namespace string) (*int, error) {
+	podClient := c.Clientset.CoreV1().Pods(namespace)
+	pods, err := podClient.List(context.TODO(), metav1.ListOptions{LabelSelector: "tier=server"})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get minecraft server pods: %w", err)
+	}
+	podsNumber := len(pods.Items)
+	return &podsNumber, nil
 }
 
 func (c *MinecraftKubeController) StartServer() error {
