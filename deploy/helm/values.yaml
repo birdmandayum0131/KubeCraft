@@ -12,7 +12,7 @@ podSelector:
 ports:
   minecraft: 25565
   gateway: 8000
-  bridge: 8000
+  bridge: 9000
 
 image:
   gateway:
