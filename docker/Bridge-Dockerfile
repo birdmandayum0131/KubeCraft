@@ -10,4 +10,5 @@ COPY ./src/features/minecraft-bridge /home/fastapi/Minecraft-Bridge
 RUN pip install -r /home/fastapi/Minecraft-Bridge/requirements.txt
 # Copy server file and eula to the image for building
 WORKDIR /home/fastapi/Minecraft-Bridge
+EXPOSE 9000
 CMD ["python", "./main.py"]
