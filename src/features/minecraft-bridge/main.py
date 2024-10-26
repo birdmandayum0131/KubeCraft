@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Response, status
 import uvicorn
 from mcstatus import JavaServer
 from dotenv import load_dotenv
@@ -30,18 +30,21 @@ async def api_root():
 
 
 @router.get("/ping", tags=["mcstatus"])
-async def ping():
+async def ping(response: Response):
     try:
         latency = server.ping()
+        response.status_code = status.HTTP_200_OK
         return {"latency": latency}
     except Exception as e:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return {"error": str(e)}
 
 
 @router.get("/status", tags=["mcstatus"])
-async def status():
+async def get_status(response: Response):
     try:
         status = server.status()
+        response.status_code = status.HTTP_200_OK
         return {
             "players": {"online": status.players.online, "max": status.players.max},
             "version": status.version.name,
@@ -49,10 +52,11 @@ async def status():
             "icon": status.icon,
         }
     except Exception as e:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return {"error": str(e)}
 
 
 app.include_router(router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=9000, reload=True)

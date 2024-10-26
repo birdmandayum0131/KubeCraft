@@ -1,7 +1,7 @@
 package bridgeclient
 
 type pingResponse struct {
-	Latency int `json:"latency"`
+	Latency float64 `json:"latency"`
 }
 
 type errorResponse struct {

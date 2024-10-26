@@ -6,6 +6,6 @@ const (
 	Online   ServerStatus = "online"
 	Offline  ServerStatus = "offline"
 	Starting ServerStatus = "starting"
-	Stopping ServerStatus = "pending"
+	Stopping ServerStatus = "stopping"
 	Unknown  ServerStatus = "unknown"
 )

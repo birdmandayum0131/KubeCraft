@@ -92,10 +92,10 @@ func createBridgeClient() (*bridgeclient.MinecraftBridgeClient, error) {
 	}
 }
 
-func createMineKubeMonitor(config infrastructure.MinecraftKubeConfig, bridgeClient bridgeclient.MinecraftBridgeClient, watcher infrastructure.DeploymentWatcher) *infrastructure.MineKubeMonitor {
+func createMineKubeMonitor(config infrastructure.MinecraftKubeConfig, bridgeClient bridgeclient.MinecraftBridgeClient, watcher infrastructure.KubeWatcher) *infrastructure.MineKubeMonitor {
 	return &infrastructure.MineKubeMonitor{
 		Config:        config,
-		DeployWatcher: watcher,
+		KubeWatcher: watcher,
 		BridgeClient:  bridgeClient,
 	}
 }
