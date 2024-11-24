@@ -14,14 +14,14 @@ spec:
         fsGroup: 1000
       containers:
         - name: minecraft-container
-          image: "birdman0131/minecraft-server:mc21-java21-paper"
+          image: "birdman0131/minecraft-server:mc20-java21-forge"
           ports:
             - containerPort: {{.Values.ports.minecraft}}
               name: minecraft-tcp
               protocol: TCP
           volumeMounts:
             - name: minecraft-server-volume
-              mountPath: /home/paper/minecraft
+              mountPath: /home/forge/minecraft
       volumes:
         - name: minecraft-server-volume
           persistentVolumeClaim:
